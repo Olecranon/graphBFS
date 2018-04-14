@@ -69,10 +69,10 @@ public class WikiCrawler
 		marked = new ArrayList<>();
 		edgesInfo = new ArrayList<>();
 		
-		request = 0;
-		
+		request = 0;		
 	}
 
+	
 	public void crawl() throws Exception {
 		String root = BASE_URL + seedUrl;
 		q.add(root);
@@ -152,15 +152,13 @@ public class WikiCrawler
             		edgesInfo.add(edgeInfo_i);  
             		
             		if(marked.size() >= max) {
+            			//after crawing. write to local file
             			writeGraphToLocalFile();
             			return;
             		}
             	}
             }    
-		}
-		
-		//after crawing. write to local file
-		
+		}		
 	}
 	
 	// need to delete later
@@ -172,6 +170,10 @@ public class WikiCrawler
 		}
 	}
 	
+	
+	/**
+	 * write edge info to the local file
+	 */
 	private void writeGraphToLocalFile() throws Exception {
 		FileWriter fw = new FileWriter(fileName);
 		fw.write(max + "\n");
