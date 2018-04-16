@@ -55,8 +55,8 @@ public class WikiCrawler
 	// nuber of request for crawling
 	private int request;
 	
-	// write graph to a local file
-
+	// a list to store all the nodes (pages) in the graph.
+	private Set<String> nodeList;
 	
 	public WikiCrawler(String seedUrl, int max, ArrayList<String> topics, String fileName)
 	{
@@ -69,13 +69,15 @@ public class WikiCrawler
 		marked = new ArrayList<>();
 		edgesInfo = new ArrayList<>();
 		
-		request = 0;		
+		request = 0;	
+		nodeList = new HashSet<String>();
 	}
 
 	
 	public void crawl() throws Exception {
 		String root = BASE_URL + seedUrl;
 		q.add(root);
+		nodeList.add(root);
 		
 		while(!q.isEmpty()) {
 			
@@ -88,11 +90,13 @@ public class WikiCrawler
             	try {
             		// check the content of the link
             		ok = true;
-            		webString = getWebAsString(firstURLString);
-            		
+            		webString = getWebAsString(firstURLString);            		
             		request++;
+            		
+            		
             		//Wait for at least 3 seconds after every 25 requests.
             		if(request%25 == 0) {
+            			System.out.println("waiting for 3 seconds");
             			Thread.sleep(3000);
             		}
             		
@@ -118,6 +122,7 @@ public class WikiCrawler
         		
         		//Wait for at least 3 seconds after every 25 requests.
         		if(request%25 == 0) {
+        			System.out.println(request + " is requested, so waiting for 3 seconds");
         			Thread.sleep(3000);
         		}
         		
@@ -151,7 +156,8 @@ public class WikiCrawler
             						  nodeB.replace("\"", "").replace(BASE_URL, "");
             		edgesInfo.add(edgeInfo_i);  
             		
-            		if(marked.size() >= max) {
+            		nodeList.add(tempURL);            		
+            		if(nodeList.size() > max) {	
             			//after crawing. write to local file
             			writeGraphToLocalFile();
             			return;
@@ -176,7 +182,7 @@ public class WikiCrawler
 	 */
 	private void writeGraphToLocalFile() throws Exception {
 		FileWriter fw = new FileWriter(fileName);
-		fw.write(max + "\n");
+		fw.write(nodeList.size() + "\n");
 		for(String s: edgesInfo) {
 			fw.write(s + "\n");
 			fw.flush();	

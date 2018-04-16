@@ -21,6 +21,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class NetworkInfluence {
 	// NOTE: graphData is an absolute file path that contains graph data, NOT the raw graph data itself
@@ -202,38 +203,142 @@ public class NetworkInfluence {
 			int setSize = infMap.get(i).size();
 			float temp = (float) (1.0/Math.pow(2, i) * setSize);
 			
-			System.out.println("dist: " + i + ", Size y is: " + setSize);			
+//			System.out.println("dist: " + i + ", Size y is: " + setSize);			
 			ans = ans + temp;
 		}
 
 		return ans;
 	}
 
+	
 	public float influence(ArrayList<String> s) {
-		// implementation
+		// calculate the distance from u to all the other nodes in the graph
+		// nodeList is calculated in the constructor.
+		// only thing to change is the distance function
+		
+		HashMap<Integer, Set<String>> infMap = new HashMap<>();	
+		for(String y:nodeList){
+			
+			int dist_u_y = distance(s, y);
+			if (dist_u_y < 0){
+				continue;
+			}
+			
+			if(!infMap.keySet().contains(dist_u_y)){
+				Set<String> k_hop = new HashSet<String>();
+				k_hop.add(y);
+				infMap.put(dist_u_y, k_hop);
+			} else {
+				Set<String> k_hop_existing = infMap.get(dist_u_y);
+				k_hop_existing.add(y);
+				infMap.put(dist_u_y, k_hop_existing);
+			}			
+		}		
+		
+		// calculate the infuence of u
+		float ans = 0;
+		for (Integer i: infMap.keySet()){
+			int setSize = infMap.get(i).size();
+			float temp = (float) (1.0/Math.pow(2, i) * setSize);
+			
+//			System.out.println("dist: " + i + ", Size y is: " + setSize);			
+			ans = ans + temp;
+		}
 
-		// replace this:
-		return -1f;
+		return ans;
 	}
 
 	public ArrayList<String> mostInfluentialDegree(int k) {
-		// implementation
-
-		// replace this:
-		return null;
+		TreeMap<Integer, ArrayList<String>> tm = new TreeMap();
+		
+		// calculate 
+		for(String node:nodeList){
+			int nodeOutDegree = outDegree(node);
+			if(!tm.keySet().contains(nodeOutDegree)){
+				// new key (degree), then add it
+				ArrayList<String> temp = new ArrayList<>();
+				temp.add(node);
+				tm.put(nodeOutDegree, temp);
+			} else {
+				// existing key (outdegree), get the node list and add the new one
+				ArrayList<String> temp_existing = tm.get(nodeOutDegree);
+				temp_existing.add(node);
+				tm.put(nodeOutDegree, temp_existing);				
+			}	
+		}
+		
+		// now find top k, trace them from treemap, 
+		ArrayList<String> result = new ArrayList<>();
+		
+		int numOfNodes = 0;
+		// this loop will only execute k times
+		while(true){
+			if (numOfNodes >= k) break;
+			
+			int lastKey = tm.lastKey();
+			// remove the last entry
+			ArrayList<String> NodesWithHighestOutDegree = tm.remove(lastKey);
+			for (String node:NodesWithHighestOutDegree){
+				result.add(node);
+				numOfNodes++;
+				if (numOfNodes >= k) break;
+			}			
+		}		
+		return result;
 	}
-
+		
 	public ArrayList<String> mostInfluentialModular(int k) {
-		// implementation
+		TreeMap<Float, ArrayList<String>> tm = new TreeMap();
 
-		// replace this:
-		return null;
+		// calculate inf(x) for each node and keep them in the tree map
+		for(String node:nodeList){
+			float nodeOutDegree = influence(node);
+			if(!tm.keySet().contains(nodeOutDegree)){
+				// new key (degree), then add it
+				ArrayList<String> temp = new ArrayList<>();
+				temp.add(node);
+				tm.put(nodeOutDegree, temp);
+			} else {
+				// existing key (outdegree), get the node list and add the new one
+				ArrayList<String> temp_existing = tm.get(nodeOutDegree);
+				temp_existing.add(node);
+				tm.put(nodeOutDegree, temp_existing);				
+			}	
+		}		
+		
+		// now find top k, trace them from treemap, 
+		ArrayList<String> result = new ArrayList<>();
+		
+		int numOfNodes = 0;
+		// this loop will only execute k times
+		while(true){
+			if (numOfNodes >= k) break;
+			
+			float lastKey = tm.lastKey();
+			// remove the last entry
+			ArrayList<String> NodesWithHighestOutDegree = tm.remove(lastKey);
+			for (String node:NodesWithHighestOutDegree){
+				result.add(node);
+				numOfNodes++;
+				if (numOfNodes >= k) break;
+			}			
+		}		
+		
+		return result;
 	}
+
 
 	public ArrayList<String> mostInfluentialSubModular(int k) {
-		// implementation
+		
+		ArrayList<String> S = new ArrayList<>();
+		S = mostInfluentialSubModular(k);
+		
+		// TODO
+//		for (int i = 0; i < k; i++) {
+//			float inf_S_v = 0;
+//		}
+		
 
-		// replace this:
-		return null;
+		return S;
 	}
 }
